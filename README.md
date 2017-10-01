@@ -28,7 +28,7 @@ Input the `/bungeen reload` command in the chat field and press the Enter key.
 /bungeen delallmember [server name] - Delete all players permitted to pass through.Everyone can pass if everyone is deleted.
 ```
 
-4. Configure
+4. Configure(config.yml)
 ```
 message:
   online: §1§lOnline
