@@ -1,0 +1,29 @@
+name: Bungeen
+version: 1.1
+description: Bungeen
+author: kubotan
+website: http://blog.gorogoro.space/
+
+main: space.gorogoro.bungeen.Bungeen
+
+commands:
+  bungeen:
+    usage: |
+       §7Example: /<command> reload - Reload the configuration.
+       §7Example: /<command> setname [server name] [value]
+       §7           Set the display value of the first line of the signboard.
+       §7Example: /<command> setcomment [server name] [value]
+       §7           Set the display value of the last line of the signboard.
+       §7Example: /<command> setprotocoltype [server name] [default|legacy]
+       §7           default:Client version 1.7 or later legecy:Other than default
+       §7Example: /<command> remove [server name]
+       §7           Remove the setting of the specified server name.
+       §7Example: /<command> addmember [server name] [playername]
+       §7           Everyone can pass before this command is executed.
+       §7           If more than one player is added, only those who are added can pass.
+       §7Example: /<command> delmember [server name] [playername]
+       §7           Delete players permitted to pass through.
+       §7           Everyone can pass if everyone is deleted.
+       §7Example: /<command> delallmember [server name]
+       §7           Delete all players permitted to pass through.
+       §7           Everyone can pass if everyone is deleted.

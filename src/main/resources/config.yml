@@ -1,0 +1,9 @@
+message:
+  online: §1§lOnline
+  offline: §8§lOffline
+  blink: §1§lRight click!
+  deny: §8§lAccess denied
+  coolingdown: §8§lCooling down
+setting:
+  retrylimit: 3
+  retryclearinterval: 86400
