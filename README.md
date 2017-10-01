@@ -2,16 +2,16 @@
 Bungeen is a plugin that connects to another Minecraft server by right-clicking a signboard.
 
 # Installation method
-Please put jar in the plugins folder.
-Note: It is recommended that you use a protection plug-in such as LWC or WorldGuard.
-Required plugin BungeeCord.
+Please put jar in the plugins folder.   
+Note: It is recommended that you use a protection plug-in such as LWC or WorldGuard.  
+Required plugin BungeeCord.  
 
 # Useage
-1. Create signbord.
-line1 `[bungeen]` Fixed character string
-line2 `hub` Specify server name to be used with `/server` command
-line3 `192.168.1.77` IP address used for status check
-line4 `25565` Port used for status check
+1. Create signbord.  
+line1 `[bungeen]` Fixed character string  
+line2 `hub` Specify server name to be used with `/server` command  
+line3 `192.168.1.77` IP address used for status check  
+line4 `25565` Port used for status check  
 
 2. Reload.
 Input the `/bungeen reload` command in the chat field and press the Enter key.
