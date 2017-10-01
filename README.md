@@ -2,8 +2,8 @@
 Bungeen is a plugin that connects to another Minecraft server by right-clicking a signboard.
 
 # Installation method
-Please put jar in the plugins folder.
-Please put it only in the plugin folder of spigot or bukkit.
+Please put jar in the plugins folder.   
+Please put it only in the plugin folder of spigot or bukkit.   
 
 Note: It is recommended that you use a protection plug-in such as LWC or WorldGuard.  
 Required plugin BungeeCord.  
