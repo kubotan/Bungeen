@@ -1,0 +1,17 @@
+language: java
+jdk:
+ - oraclejdk8
+deploy:
+  provider: releases
+  api_key:
+    secure: 
+  file_glob: true
+  file: "$TRAVIS_BUILD_DIR/target/Bungeen*.jar"
+  skip_cleanup: true
+  on:
+    repo: kubotan/Bungeen
+    tags: true
+notifications:
+  email:
+    on_success: never
+    on_failure: change
