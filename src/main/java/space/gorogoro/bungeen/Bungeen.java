@@ -1,5 +1,5 @@
 package space.gorogoro.bungeen;
-sdaafa
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
