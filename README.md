@@ -4,6 +4,7 @@
 [![GitHub release](https://img.shields.io/github/release/kubotan/Bungeen.svg)](https://github.com/kubotan/Bungeen/releases)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/kubotan/Bungeen/issues)
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://github.com/kubotan/Bungeen/blob/master/LICENSE)
+
 Bungeen is a plugin that connects to another Minecraft server by right-clicking a signboard.
 
 # Installation method
