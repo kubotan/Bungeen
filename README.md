@@ -2,17 +2,11 @@
 [![Spigot 1.12.2](https://img.shields.io/badge/Spigot-1.12.2-brightgreen.svg)](https://www.spigotmc.org/wiki/spigot/)
 [![Bungee Cord 1.12.2](https://img.shields.io/badge/BungeeCord-1.12.2-brightgreen.svg)](https://www.spigotmc.org/wiki/bungeecord/)
 [![GitHub release](https://img.shields.io/github/release/kubotan/Bungeen.svg)](https://github.com/kubotan/Bungeen/releases)
+[![Build Status]( https://travis-ci.org/kubotan/Bungeen.svg?branch=master)](https://travis-ci.org/kubotan/Bungeen)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/kubotan/Bungeen/issues)
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://github.com/kubotan/Bungeen/blob/master/LICENSE)
 
 Bungeen is a plugin that connects to another Minecraft server by right-clicking a signboard.
-
-# Build status
-
-* master: [![Build Status]( https://travis-ci.org/kubotan/Bungeen.svg?branch=master)](https://travis-ci.org/kubotan/Bungeen)
-
-* develop: [![Build Status]( https://travis-ci.org/kubotan/Bungeen.svg?branch=develop)](https://travis-ci.org/kubotan/Bungeen)
-
 
 # Installation method
 Please put jar in the plugins folder.   
