@@ -556,6 +556,10 @@ public class Bungeen extends JavaPlugin implements Listener {
         }
       }
       
+      String msg = getConfig().getString("message.anotherserver").replace("%player%", p.getName().toString());
+      for(Player player : Bukkit.getOnlinePlayers()) {
+        player.sendMessage(msg);
+      }
       p.sendMessage("§cConnecting...");
       ByteArrayDataOutput out = ByteStreams.newDataOutput();
       out.writeUTF("Connect");
