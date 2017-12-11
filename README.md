@@ -4,8 +4,9 @@
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/kubotan/Bungeen/issues)
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://github.com/kubotan/Bungeen/blob/master/LICENSE)
 
-master:[![Build Status]( https://travis-ci.org/kubotan/Bungeen.svg?branch=master)](https://travis-ci.org/kubotan/Bungeen)
-develop:[![Build Status]( https://travis-ci.org/kubotan/Bungeen.svg?branch=develop)](https://travis-ci.org/kubotan/Bungeen)
+* master: [![Build Status]( https://travis-ci.org/kubotan/Bungeen.svg?branch=master)](https://travis-ci.org/kubotan/Bungeen)
+
+* develop: [![Build Status]( https://travis-ci.org/kubotan/Bungeen.svg?branch=develop)](https://travis-ci.org/kubotan/Bungeen)
 
 Bungeen is a plugin that connects to another Minecraft server by right-clicking a signboard.
 
