@@ -86,7 +86,7 @@ public class SignUpdater implements Runnable {
 	    if (b.getType() == Material.WALL_SIGN || b.getType() == Material.SIGN_POST) {
 	      Sign s = (Sign)b.getState();
 	      try {
-          if((System.currentTimeMillis() - sv.getFailTimestamp()) > retryclearinterval) {
+          if(sv.getFail() != null && sv.getFail() > 0 && (System.currentTimeMillis() - sv.getFailTimestamp()) > retryclearinterval) {
             sv.setFail(0);
           }
 	        if(sv.getFail() != null && sv.getFail() >= retrylimit) {

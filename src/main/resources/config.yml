@@ -4,6 +4,7 @@ message:
   blink: §1§lRight click!
   deny: §8§lAccess denied
   coolingdown: §8§lCooling down
+  anotherserver: §8§l%player% went to another internal server
 setting:
   retrylimit: 3
   retryclearinterval: 86400
