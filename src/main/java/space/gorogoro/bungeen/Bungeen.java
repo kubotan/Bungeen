@@ -118,7 +118,7 @@ public class Bungeen extends JavaPlugin implements Listener {
       stmt.close();
       
       scheduler = getServer().getScheduler();
-      scheduler.scheduleSyncRepeatingTask(this, new SignUpdater(con), 0L, 20L);
+      scheduler.scheduleAsyncRepeatingTask(this, new SignUpdater(con), 0L, 20L);
 
     } catch (SQLException e) {
       error(e);
