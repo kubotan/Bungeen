@@ -1,6 +1,6 @@
 # Bungeen
-[![Spigot 1.12.2](https://img.shields.io/badge/Spigot-1.12.2-brightgreen.svg)](https://www.spigotmc.org/wiki/spigot/)
-[![Bungee Cord 1.12.2](https://img.shields.io/badge/BungeeCord-1.12.2-brightgreen.svg)](https://www.spigotmc.org/wiki/bungeecord/)
+[![Spigot 1.13.1](https://img.shields.io/badge/Spigot-1.13.1-brightgreen.svg)](https://www.spigotmc.org/wiki/spigot/)
+[![Bungee Cord 1.13.1](https://img.shields.io/badge/BungeeCord-1.13.1-brightgreen.svg)](https://www.spigotmc.org/wiki/bungeecord/)
 [![GitHub release](https://img.shields.io/github/release/kubotan/Bungeen.svg)](https://github.com/kubotan/Bungeen/releases)
 [![Build Status]( https://travis-ci.org/kubotan/Bungeen.svg?branch=master)](https://travis-ci.org/kubotan/Bungeen)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/kubotan/Bungeen/issues)
