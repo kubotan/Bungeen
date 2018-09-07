@@ -4,7 +4,7 @@
 
   <groupId>space.gorogoro</groupId>
   <artifactId>Bungeen</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>2.0</version>
   <packaging>jar</packaging>
 
   <name>Bungeen</name>
@@ -40,7 +40,7 @@
       <groupId>org.spigotmc</groupId>
       <artifactId>spigot-api</artifactId>
       <scope>provided</scope>
-      <version>1.12-R0.1-SNAPSHOT</version>
+      <version>1.13.1-R0.1-SNAPSHOT</version>
     </dependency>
   </dependencies>
 

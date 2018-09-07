@@ -3,6 +3,15 @@ package space.gorogoro.bungeen;
 public class Status {
   
   public Players players;
+  public Integer ping;
+
+  public Integer getPing() {
+    return this.ping;
+  }
+
+  public void setPing(Integer i) {
+    this.ping = i;
+  }
   
   public Integer getOnlinePlayers() {
     return this.players.online;
