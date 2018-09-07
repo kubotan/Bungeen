@@ -26,6 +26,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import com.google.common.io.ByteArrayDataOutput;
@@ -61,59 +62,36 @@ public class Bungeen extends JavaPlugin implements Listener {
       Statement stmt = con.createStatement();
       stmt.setQueryTimeout(30);    // タイムアウト設定
 
-      // テーブルの実在チェック
-      Boolean existsBungeenTable = false;
-      ResultSet rs1 = stmt.executeQuery("select count(*) from sqlite_master where type='table' and name='bungeen'");
-      while (rs1.next()) {
-        if(rs1.getInt(1) > 0){
-          existsBungeenTable = true;
-        }
-      }
-      rs1.close();
-      Boolean existsMemberTable = false;
-      ResultSet rs2 = stmt.executeQuery("select count(*) from sqlite_master where type='table' and name='member'");
-      while (rs2.next()) {
-        if(rs2.getInt(1) > 0){
-          existsMemberTable = true;
-        }
-      }
-      rs2.close();
+      //テーブル作成
+      stmt.executeUpdate("CREATE TABLE IF NOT EXISTS bungeen ("
+        + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        + "world STRING NOT NULL,"
+        + "x INTEGER NOT NULL,"
+        + "y INTEGER NOT NULL,"
+        + "z INTEGER NOT NULL,"
+        + "server STRING NOT NULL,"
+        + "ip STRING NOT NULL,"
+        + "port INTEGER NOT NULL,"
+        + "name STRING,"
+        + "comment STRING);"
+      );
 
-      // テーブルが無かった場合
-      if(!existsBungeenTable){
-        //テーブル作成
-        stmt.executeUpdate("create table bungeen ("
-          + "id integer primary key autoincrement,"
-          + "world string not null,"
-          + "x integer not null,"
-          + "y integer not null,"
-          + "z integer not null,"
-          + "server string not null,"
-          + "ip string not null,"
-          + "port integer not null,"
-          + "type string not null default 'default',"
-          + "name string,"
-          + "comment string);"
-        );
+      //インデックス作成
+      stmt.executeUpdate("CREATE INDEX IF NOT EXISTS bungeen_world_x_y_z ON bungeen (world,x,y,z);");
+      stmt.executeUpdate("CREATE INDEX IF NOT EXISTS bungeen_server ON bungeen (server);");
 
-        //インデックス作成
-        stmt.executeUpdate("create index bungeen_world_x_y_z on bungeen (world,x,y,z);");
-        stmt.executeUpdate("create index bungeen_server on bungeen (server);");
-      }
-      if(!existsMemberTable){
-        //テーブル作成
-        stmt.executeUpdate("create table member ("
-          + "id integer primary key autoincrement,"
-          + "bungeen_id integer not null,"
-          + "owner string not null,"
-          + "member string not null,"
-          + "owner_uuid string not null,"
-          + "member_uuid string not null);"
-        );
+      //テーブル作成
+      stmt.executeUpdate("CREATE TABLE IF NOT EXISTS member ("
+        + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        + "bungeen_id INTEGER NOT NULL,"
+        + "owner STRING NOT NULL,"
+        + "member STRING NOT NULL,"
+        + "owner_uuid STRING NOT NULL,"
+        + "member_uuid STRING NOT NULL);"
+      );
 
-        //インデックス作成
-        stmt.executeUpdate("create index member_bungeen_id on member (bungeen_id);");
-      }
+      //インデックス作成
+      stmt.executeUpdate("CREATE INDEX IF NOT EXISTS member_bungeen_id ON member (bungeen_id);");
       
       stmt.close();
       
@@ -144,9 +122,7 @@ public class Bungeen extends JavaPlugin implements Listener {
         return true;
       }
 
-      Player mp;
-      String server,member,owner,memberUuid,ownerUuid;
-      Integer memberId = null;
+      String server,member;
       Integer bungeenId = null;
       PreparedStatement prepStmt;
       ResultSet rs;
@@ -272,47 +248,6 @@ public class Bungeen extends JavaPlugin implements Listener {
           sp.sendMessage("Comment updated!");
           sp.sendMessage("§cPlease reflect it with '/bungeen reload'.");
           break;
-        
-        case "setprotocoltype":
-          if ( args.length < 2) {
-            sp.sendMessage("§cThe server name is required as an argument.");
-            return false;            
-          }
-          server = args[1];
-
-          if ( args.length < 3) {
-            sp.sendMessage("§cThe protocol type value is required as an argument.");
-            return false;            
-          }
-          String type = args[2];
-          if((!type.equals("default") && !type.equals("legacy"))) {
-            sp.sendMessage("§cThe value is required as an argument. default or legacy");
-            return false;
-          }
-          
-          prepStmt = con.prepareStatement("select id from bungeen where server=?;");
-          prepStmt.setString(1, server);
-          rs = prepStmt.executeQuery();
-          while (rs.next()) {
-            bungeenId = rs.getInt(1);
-          }
-          rs.close();
-          prepStmt.close();
-          if(bungeenId == null) {
-            sp.sendMessage("§cCan't find server.");
-            return false;
-          }
-
-          prepStmt = con.prepareStatement("update bungeen set type = ? where id = ?");
-          prepStmt.setString(1, type);
-          prepStmt.setInt(2, bungeenId);
-          prepStmt.addBatch();
-          prepStmt.executeBatch();
-          con.commit();
-          prepStmt.close();
-          sp.sendMessage("Protocol type updated!");
-          sp.sendMessage("§cPlease reflect it with '/bungeen reload'.");
-          break;
           
         case "addmember":
           if ( args.length < 2) {
@@ -325,65 +260,81 @@ public class Bungeen extends JavaPlugin implements Listener {
             return false;            
           }
           member = args[2];
-          
-          mp = this.getServer().getPlayer(member);
-          if(mp == null) {
-            memberUuid = MojangApi.getUUID(member);
-            if(memberUuid == null) {
-              sp.sendMessage("§cCan't find member.The member to be added is not online.");
-              return false;
-            }
-          } else {
-            memberUuid = mp.getUniqueId().toString();
-          }
-          owner = sp.getName();
-          ownerUuid = sp.getUniqueId().toString();
-          if(member.length() < 1 || 
-            owner.length() < 1 ||
-            memberUuid.length() < 1 || 
-            ownerUuid.length() < 1) {
-            sp.sendMessage("§cCan't find player info.");
-            return false;
-          }
-          
-          prepStmt = con.prepareStatement("select id from bungeen where server=?;");
-          prepStmt.setString(1, server);
-          rs = prepStmt.executeQuery();
-          while (rs.next()) {
-            bungeenId = rs.getInt(1);
-          }
-          rs.close();
-          prepStmt.close();
-          if(bungeenId == null) {
-            sp.sendMessage("§cCan't find server.");
-            return false;
-          }
+          Player addMp = this.getServer().getPlayer(member);
 
-          prepStmt = con.prepareStatement("select id from member where bungeen_id = ? and member_uuid=?;");
-          prepStmt.setInt(1, bungeenId);
-          prepStmt.setString(2, memberUuid);
-          rs = prepStmt.executeQuery();
-          while (rs.next()) {
-            memberId = rs.getInt(1);
-          }
-          rs.close();
-          prepStmt.close();
-          if(memberId != null) {
-            sp.sendMessage("§cAlready member.");
-            return true;
-          }
+          new BukkitRunnable() {
+            String server,member,owner,memberUuid,ownerUuid;
+            Integer memberId = null;
+            Integer bungeenId = null;
+            PreparedStatement prepStmt;
+            ResultSet rs;
 
-          prepStmt = con.prepareStatement("insert into member(bungeen_id,owner,member,owner_uuid,member_uuid) values (?,?,?,?,?);");
-          prepStmt.setInt(1, bungeenId);
-          prepStmt.setString(2, owner);
-          prepStmt.setString(3, member);
-          prepStmt.setString(4, ownerUuid);
-          prepStmt.setString(5, memberUuid);
-          prepStmt.addBatch();
-          prepStmt.executeBatch();
-          con.commit();
-          prepStmt.close();
-          sp.sendMessage("Add member!");
+          		@Override
+        			public void run() {
+  		          try {
+			          if(addMp == null) {
+			            memberUuid = MojangApi.getUUID(member);
+			            if(memberUuid == null) {
+			              sp.sendMessage("§cCan't find member.The member to be added is not online.");
+			              return;
+			            }
+			          } else {
+			            memberUuid = addMp.getUniqueId().toString();
+			          }
+			          owner = sp.getName();
+			          ownerUuid = sp.getUniqueId().toString();
+			          if(member.length() < 1 || 
+			            owner.length() < 1 ||
+			            memberUuid.length() < 1 || 
+			            ownerUuid.length() < 1) {
+			            sp.sendMessage("§cCan't find player info.");
+			            return;
+			          }
+			          
+	              prepStmt = con.prepareStatement("select id from bungeen where server=?;");
+			          prepStmt.setString(1, server);
+			          rs = prepStmt.executeQuery();
+			          while (rs.next()) {
+			            bungeenId = rs.getInt(1);
+			          }
+			          rs.close();
+			          prepStmt.close();
+			          if(bungeenId == null) {
+			            sp.sendMessage("§cCan't find server.");
+			            return;
+			          }
+			
+			          prepStmt = con.prepareStatement("select id from member where bungeen_id = ? and member_uuid=?;");
+			          prepStmt.setInt(1, bungeenId);
+			          prepStmt.setString(2, memberUuid);
+			          rs = prepStmt.executeQuery();
+			          while (rs.next()) {
+			            memberId = rs.getInt(1);
+			          }
+			          rs.close();
+			          prepStmt.close();
+			          if(memberId != null) {
+			            sp.sendMessage("§cAlready member.");
+			            return;
+			          }
+			
+			          prepStmt = con.prepareStatement("insert into member(bungeen_id,owner,member,owner_uuid,member_uuid) values (?,?,?,?,?);");
+			          prepStmt.setInt(1, bungeenId);
+			          prepStmt.setString(2, owner);
+			          prepStmt.setString(3, member);
+			          prepStmt.setString(4, ownerUuid);
+			          prepStmt.setString(5, memberUuid);
+			          prepStmt.addBatch();
+			          prepStmt.executeBatch();
+			          con.commit();
+			          prepStmt.close();
+			          sp.sendMessage("Add member!");
+  							} catch (SQLException e) {
+  								e.printStackTrace();
+  							}
+
+        			}
+          }.runTaskAsynchronously(this);
           break;
           
         case "delmember":
@@ -398,62 +349,79 @@ public class Bungeen extends JavaPlugin implements Listener {
           }
           member = args[2];
 
-          mp = this.getServer().getPlayer(member);
-          if(mp == null) {
-            memberUuid = MojangApi.getUUID(member);
-            if(memberUuid == null) {
-              sp.sendMessage("§cCan't find member.The member to be deleted is not online.");
-              return false;
-            }
-          } else {
-            memberUuid = mp.getUniqueId().toString();
-          }
-          owner = sp.getName();
-          ownerUuid = sp.getUniqueId().toString();
-          if(member.length() < 1 || 
-            owner.length() < 1 ||
-            memberUuid.length() < 1 || 
-            ownerUuid.length() < 1) {
-            sp.sendMessage("§cCan't find player info.");
-            return false;
-          }
-
-          prepStmt = con.prepareStatement("select id from bungeen where server=?;");
-          prepStmt.setString(1, server);
-          rs = prepStmt.executeQuery();
-          while (rs.next()) {
-            bungeenId = rs.getInt(1);
-          }
-          rs.close();
-          prepStmt.close();
+          Player delMp = this.getServer().getPlayer(member);
           
-          if(bungeenId == null) {
-            sp.sendMessage("§cCan't find server.");
-            return false;
-          }
+          new BukkitRunnable() {
+            String server,member,owner,memberUuid,ownerUuid;
+            Integer memberId = null;
+            Integer bungeenId = null;
+            PreparedStatement prepStmt;
+            ResultSet rs;
 
-          prepStmt = con.prepareStatement("select id from member where bungeen_id = ? and member_uuid=?;");
-          prepStmt.setInt(1, bungeenId);
-          prepStmt.setString(2, memberUuid);
-          rs = prepStmt.executeQuery();
-          while (rs.next()) {
-            memberId = rs.getInt(1);
-          }
-          rs.close();
-          prepStmt.close();
-          if(memberId == null) {
-            sp.sendMessage("§cCan't find member.");
-            return false;
-          }
+          		@Override
+        			public void run() {
+  		          try {
+			          if(delMp == null) {
+			            memberUuid = MojangApi.getUUID(member);
+			            if(memberUuid == null) {
+			              sp.sendMessage("§cCan't find member.The member to be deleted is not online.");
+			              return;
+			            }
+			          } else {
+			            memberUuid = delMp.getUniqueId().toString();
+			          }
+			          owner = sp.getName();
+			          ownerUuid = sp.getUniqueId().toString();
+			          if(member.length() < 1 || 
+			            owner.length() < 1 ||
+			            memberUuid.length() < 1 || 
+			            ownerUuid.length() < 1) {
+			            sp.sendMessage("§cCan't find player info.");
+			            return;
+			          }
+			
+			          prepStmt = con.prepareStatement("select id from bungeen where server=?;");
+			          prepStmt.setString(1, server);
+			          rs = prepStmt.executeQuery();
+			          while (rs.next()) {
+			            bungeenId = rs.getInt(1);
+			          }
+			          rs.close();
+			          prepStmt.close();
+			          
+			          if(bungeenId == null) {
+			            sp.sendMessage("§cCan't find server.");
+			            return;
+			          }
+			
+			          prepStmt = con.prepareStatement("select id from member where bungeen_id = ? and member_uuid=?;");
+			          prepStmt.setInt(1, bungeenId);
+			          prepStmt.setString(2, memberUuid);
+			          rs = prepStmt.executeQuery();
+			          while (rs.next()) {
+			            memberId = rs.getInt(1);
+			          }
+			          rs.close();
+			          prepStmt.close();
+			          if(memberId == null) {
+			            sp.sendMessage("§cCan't find member.");
+			            return;
+			          }
+			
+			          prepStmt = con.prepareStatement("delete from member where bungeen_id=? and member_uuid=?;");
+			          prepStmt.setInt(1, bungeenId);
+			          prepStmt.setString(2, memberUuid);
+			          prepStmt.addBatch();
+			          prepStmt.executeBatch();
+			          con.commit();
+			          prepStmt.close();
+			          sp.sendMessage("Delete member!");
+  							} catch (SQLException e) {
+  								e.printStackTrace();
+  							}
 
-          prepStmt = con.prepareStatement("delete from member where bungeen_id=? and member_uuid=?;");
-          prepStmt.setInt(1, bungeenId);
-          prepStmt.setString(2, memberUuid);
-          prepStmt.addBatch();
-          prepStmt.executeBatch();
-          con.commit();
-          prepStmt.close();
-          sp.sendMessage("Delete member!");
+        			}
+          }.runTaskAsynchronously(this);
           break;
           
         case "delallmember":
@@ -505,7 +473,7 @@ public class Bungeen extends JavaPlugin implements Listener {
     }
     Block clickedBlock = event.getClickedBlock();
     Material material = clickedBlock.getType();
-    if (material != Material.SIGN_POST && material != Material.WALL_SIGN) {
+    if (material != Material.SIGN && material != Material.WALL_SIGN) {
       return;
     }
     

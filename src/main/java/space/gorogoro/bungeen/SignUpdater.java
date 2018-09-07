@@ -1,18 +1,7 @@
 package space.gorogoro.bungeen;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -23,9 +12,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-
-import com.google.gson.Gson;
 
 public class SignUpdater implements Runnable {
   public String online;
@@ -83,8 +72,27 @@ public class SignUpdater implements Runnable {
     for(int i = 0;i< this.serverList.size();i++) {
       Server sv = this.serverList.get(i);	    
 	    Block b = Bukkit.getWorld(sv.getWorld()).getBlockAt(sv.getX(), sv.getY(), sv.getZ());
-	    if (b.getType() == Material.WALL_SIGN || b.getType() == Material.SIGN_POST) {
+	    boolean isNearPlayer = false;
+	    for(Entity e: b.getLocation().getChunk().getEntities()) {
+	    		if(e instanceof Player) {
+	    			isNearPlayer = true;
+	    			break;
+	    		}
+	    }
+	    if(isNearPlayer == false) {
+	    		continue;
+	    }
+	    if (b.getType() == Material.WALL_SIGN || b.getType() == Material.SIGN) {
 	      Sign s = (Sign)b.getState();
+        String title=sv.getServer();
+        String name=sv.getName();
+        if(name != null && name.length() > 0) {
+          title = name;
+        }
+        String comment="";
+        if(sv.getComment() != null && sv.getComment().length() > 0) {
+          comment = sv.getComment();
+        }
 	      try {
           if(sv.getFail() != null && sv.getFail() > 0 && (System.currentTimeMillis() - sv.getFailTimestamp()) > retryclearinterval) {
             sv.setFail(0);
@@ -93,28 +101,22 @@ public class SignUpdater implements Runnable {
 	          return;
 	        }
 	        
-          String title=sv.getServer();
-          String name=sv.getName();
-          if(name != null && name.length() > 0) {
-            title = name;
-          }
           String ip=sv.getIp();
           int port=sv.getPort();
-
-          String comment="";
-          if(sv.getComment() != null && sv.getComment().length() > 0) {
-            comment = sv.getComment();
-          }
           
+          MinecraftClient mc = new MinecraftClient();
+          Status st = mc.getStatus(ip, port);
           s.setLine(0, "§l" + title);
+          s.setLine(1, "§a§l" + st.getOnlinePlayers() + " / " + st.getMaxPlayers());
+          Integer cur = (int) (System.currentTimeMillis() / 1000);
+          if(cur % 2 == 0) {
+            s.setLine(2, online);
+          }else {
+            s.setLine(2, blink);
+          }
           s.setLine(3, "§l" + comment);
-	        if(sv.getType().equals("legacy")) {
-	          setSignTextOfPlayersOld(s, ip, port);
-	        }else {
-	          setSignTextOfPlayers17(s, ip, port);
-	        }
+
 	      } catch (Exception e) {
-	        error(e);
 	        Integer fcnt = sv.getFail();
 	        if(fcnt == null) {
 	          fcnt = 0;
@@ -122,187 +124,13 @@ public class SignUpdater implements Runnable {
 	        fcnt++;
 	        sv.setFail(fcnt);
 	        sv.setFailTimestamp(System.currentTimeMillis());
-	        setSignTextofOffline(s);
+          s.setLine(0, "§l" + title);
+	        s.setLine(1, "§a§l- / -");
+	        s.setLine(2, offline);
+          s.setLine(3, "§l" + comment);
 	      }
 	      s.update();
 	    }
 	  }
-  }
-  
-  public void setSignTextofOffline(Sign s) {
-    s.setLine(1, "§a§l- / -");
-    s.setLine(2, offline);
-  }
-
-  public void setSignTextOfPlayersOld(Sign s,String address,Integer port) throws IOException {
-    /*
-     * Before client version 1.7
-     */
-    Socket socket = new Socket(address, port);
-    socket.setSoTimeout(3000);
-
-    OutputStream out = socket.getOutputStream();
-    out.write(0xFE);
-    out.write(0x01);
-    out.flush();
-
-    InputStream in = socket.getInputStream();
-    if (in.read() != 0xFF) {
-      socket.close();
-      return;
-    }
-
-    byte[] bytes = new byte[2];
-    if (in.read(bytes) != 2) {
-      socket.close();
-      return;
-    }
-    short len = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN).getShort();
-
-    bytes = new byte[len * 2];
-    in.read(bytes);
-    socket.close();
-    String response = new String(bytes, Charset.forName("UTF-16BE"));
-    String[] data = response.split("\0");
-
-    if (data.length == 1) {
-      // Beta 1.8 to 1.3
-      data = response.split("\u00A7");
-      if (data.length < 3) {
-        return;
-      }
-      int dataLen = data.length;
-      String maxPlayers = data[--dataLen];
-      String onlinePlayers = data[--dataLen];
-      s.setLine(1, "§a§l" + onlinePlayers + " / " + maxPlayers);
-      Integer cur = (int) (System.currentTimeMillis() / 1000);
-      if(cur % 2 == 0) {
-        s.setLine(2, online);
-      }else {
-        s.setLine(2, blink);
-      }
-    } else if (data.length == 6) {
-      // 1.6
-      s.setLine(1, "§a§l" + data[4] + " / " + data[5]);
-      Integer cur = (int) (System.currentTimeMillis() / 1000);
-      if(cur % 2 == 0) {
-        s.setLine(2, online);
-      }else {
-        s.setLine(2, blink);
-      }
-    } else {
-      return;
-    }
-  }
-
-  public void setSignTextOfPlayers17(Sign s,String address,Integer port) throws IOException {
-    /*
-     * Client version 1.7 or later
-     */
-    Socket socket = new Socket(address, port);
-    socket.setSoTimeout(3000);
-
-    DataOutputStream output = new DataOutputStream(socket.getOutputStream());
-    DataInputStream input = new DataInputStream(socket.getInputStream());
-
-    byte [] handshakeMessage = createHandshakeMessage(address, port);
-    writeVarInt(output, handshakeMessage.length);
-    output.write(handshakeMessage);
-
-    output.writeByte(0x01);
-    output.writeByte(0x00);
-
-    readVarInt(input);
-    int packetId = readVarInt(input);
-    if (packetId == -1) {
-      socket.close();
-      return;
-    }
-    if (packetId != 0x00) {
-      socket.close();
-      return;
-    }
-    int length = readVarInt(input);
-
-    if (length == -1) {
-      socket.close();
-      return;
-    }
-
-    if (length == 0) {
-      socket.close();
-      return;
-    }
-
-    byte[] in = new byte[length];
-    input.readFully(in);
-    String strJson = new String(in);
-    Gson gson = new Gson();
-    Status st = gson.fromJson(strJson, Status.class);
-    s.setLine(1, "§a§l" + st.getOnlinePlayers() + " / " + st.getMaxPlayers());
-    Integer cur = (int) (System.currentTimeMillis() / 1000);
-    if(cur % 2 == 0) {
-      s.setLine(2, online);
-    }else {
-      s.setLine(2, blink);
-    }
-
-    long now = System.currentTimeMillis();
-    output.writeByte(0x09);
-    output.writeByte(0x01);
-    output.writeLong(now);
-
-    readVarInt(input);
-    packetId = readVarInt(input);
-    if (packetId == -1) {
-      socket.close();
-      return;
-    }
-
-    if (packetId != 0x01) {
-      socket.close();
-      return;
-    }
-    socket.close();    
-  }
-
-  public static byte [] createHandshakeMessage(String host, int port) throws IOException {
-    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-    DataOutputStream handshake = new DataOutputStream(buffer);
-    byte [] bytes = host.getBytes(StandardCharsets.UTF_8);
-    handshake.writeByte(0x00);
-    writeVarInt(handshake, 4);
-    writeVarInt(handshake, bytes.length);
-    handshake.write(bytes);
-    handshake.writeShort(port);
-    writeVarInt(handshake, 1);
-    return buffer.toByteArray();
-  }
-    
-  public static void writeVarInt(DataOutputStream out, int paramInt) throws IOException {
-    while (true) {
-      if ((paramInt & 0xFFFFFF80) == 0) {
-        out.writeByte(paramInt);
-        return;
-      }
-      out.writeByte(paramInt & 0x7F | 0x80);
-      paramInt >>>= 7;
-    }
-  }
-  
-  public static int readVarInt(DataInputStream in) throws IOException {
-    int i = 0;
-    int j = 0;
-    while (true) {
-      int k = in.readByte();
-      i |= (k & 0x7F) << j++ * 7;
-      if (j > 5) {
-        throw new IOException("Error: too big");
-      }
-      if ((k & 0x80) != 128) {
-        break;
-      }
-    }
-    return i;
   }
 }
