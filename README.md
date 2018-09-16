@@ -1,6 +1,6 @@
 # Bungeen
-[![Spigot 1.12.2](https://img.shields.io/badge/Spigot-1.12.2-brightgreen.svg)](https://www.spigotmc.org/wiki/spigot/)
-[![Bungee Cord 1.12.2](https://img.shields.io/badge/BungeeCord-1.12.2-brightgreen.svg)](https://www.spigotmc.org/wiki/bungeecord/)
+[![Spigot 1.13.1](https://img.shields.io/badge/Spigot-1.13.1-brightgreen.svg)](https://www.spigotmc.org/wiki/spigot/)
+[![Bungee Cord 1.13.1](https://img.shields.io/badge/BungeeCord-1.13.1-brightgreen.svg)](https://www.spigotmc.org/wiki/bungeecord/)
 [![GitHub release](https://img.shields.io/github/release/kubotan/Bungeen.svg)](https://github.com/kubotan/Bungeen/releases)
 [![Build Status]( https://travis-ci.org/kubotan/Bungeen.svg?branch=master)](https://travis-ci.org/kubotan/Bungeen)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/kubotan/Bungeen/issues)
@@ -30,7 +30,6 @@ Input the `/bungeen reload` command in the chat field and press the Enter key.
 /bungeen reload - Reload the configuration.
 /bungeen setname [server name] [value] - Set the display value of the first line of the signboard.
 /bungeen setcomment [server name] [value] - Set the display value of the last line of the signboard.
-/bungeen setprotocoltype [server name] [default|legacy] - default:Client version 1.7 or later legecy:Other than default
 /bungeen remove [server name] - Remove the setting of the specified server name.
 /bungeen addmember [server name] [playername] - Everyone can pass before this command is executed.If more than one player is added, only those who are added can pass.
 /bungeen delmember [server name] [playername] - Delete players permitted to pass through.Everyone can pass if everyone is deleted.
